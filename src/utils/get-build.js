@@ -1,11 +1,6 @@
 const _ = require('underscore');
 const getGithub = require('./get-github');
 
-// exports.getFile = ({owner, githubToken: token, ref, repo, file}) =>
-//   (new Octokat({token})).repos(owner, repo).contents(file).read({ref})
-//     .then(({content}) => Buffer.from(content, 'base64').toString())
-//     .catch(er => { if (er.status !== 404) throw er; });
-
 const NO_REPO_REF_ERROR = _.extend(
   new Error('`repo` and `ref` are required'),
   {isPublic: true, status: 400}
@@ -29,7 +24,14 @@ module.exports = async options => {
 
   if (!config) return;
 
-  config = JSON.parse(config);
+  try {
+    config = JSON.parse(config);
+  } catch (er) {
+    throw _.extend(
+      new Error(`Unable to parse curbside.json. ${er}`),
+      {isPublic: true, status: 400}
+    );
+  }
 
   return {config, repo, ref, sha, tags};
 };
