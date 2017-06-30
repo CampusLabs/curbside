@@ -23,7 +23,7 @@ module.exports = o =>
     resource: {
       destination: o.RESOURCE_DESTINATION,
       repo: o.RESOURCE_REPO,
-      version: {sha: o.RESOURCE_VERSION_SHA}
+      version: o.RESOURCE_VERSION
     },
     vault: {
       auth: {
