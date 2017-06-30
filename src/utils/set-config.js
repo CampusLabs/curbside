@@ -4,6 +4,9 @@ const config = require('../config');
 module.exports = o =>
   _.extend(config, {
     concourse: {
+      pipeline: o.CONCOURSE_PIPELINE,
+      resource: o.CONCOURSE_RESOURCE,
+      team: o.CONCOURSE_TEAM,
       url: o.CONCOURSE_URL
     },
     curbside: {
@@ -23,7 +26,7 @@ module.exports = o =>
     resource: {
       destination: o.RESOURCE_DESTINATION,
       repo: o.RESOURCE_REPO,
-      version: o.RESOURCE_VERSION
+      version: {id: o.RESOURCE_VERSION_ID}
     },
     vault: {
       auth: {

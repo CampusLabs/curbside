@@ -1,6 +1,11 @@
 require('./initializers/set-config-from-stdin');
 
-const {resource: {destination, repo, version, version: {sha}}} = require('./config');
+const {
+  concourse: {pipeline, resource, team},
+  curbside: {url},
+  resource: {destination, version, version: {id}},
+  webhookToken
+} = require('./config');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const getGithubAccessToken = require('./utils/get-github-access-token');
@@ -24,9 +29,14 @@ const writeSource = res =>
 
 (async () => {
   try {
+    const res = await fetch(
+      `${url}/builds/${team}/${pipeline}/${resource}/${id}` +
+      `?webhookToken=${webhookToken}`
+    );
+    const {repo, sha} = await res.json();
     const accessToken = await getGithubAccessToken();
-    const url = `https://api.github.com/repos/${repo}/tarball/${sha}`;
-    await writeSource(await fetch(`${url}?access_token=${accessToken}`));
+    const apiUrl = `https://api.github.com/repos/${repo}/tarball/${sha}`;
+    await writeSource(await fetch(`${apiUrl}?access_token=${accessToken}`));
     fs.writeFileSync(`${destination}/sha`, sha);
     console.log(JSON.stringify({version}));
   } catch (er) {

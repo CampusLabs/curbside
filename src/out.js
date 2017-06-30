@@ -1,10 +1,20 @@
 require('./initializers/set-config-from-stdin');
 
-const {version, version: {repo, sha}} = require('./config').resource;
+const {
+  concourse: {pipeline, resource, team},
+  curbside: {url},
+  resource: {version, version: {id}},
+  webhookToken
+} = require('./config');
 const getGithub = require('./utils/get-github');
 
 (async () => {
   try {
+    const res = await fetch(
+      `${url}/builds/${team}/${pipeline}/${resource}/${id}` +
+      `?webhookToken=${webhookToken}`
+    );
+    const {repo, sha} = await res.json();
     const github = await getGithub();
     const commit = await github.repos(repo).commits(sha).fetch();
     console.log('Build...', commit);

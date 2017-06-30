@@ -18,6 +18,6 @@ const toEnv = (obj, env = {}, parent = []) => {
 setConfig(
   _.extend(toEnv(source), {
     RESOURCE_DESTINATION: destination,
-    RESOURCE_VERSION: version
+    RESOURCE_VERSION_ID: version.id
   })
 );
