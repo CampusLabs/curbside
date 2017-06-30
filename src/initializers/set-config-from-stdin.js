@@ -3,7 +3,7 @@ const fs = require('fs');
 const setConfig = require('../utils/set-config');
 
 const {2: destination} = process.argv;
-const {source, version: {id} = {}} = {};//JSON.parse(fs.readFileSync('/dev/stdin'));
+const {source, version: {id} = {}} = JSON.parse(fs.readFileSync('/dev/stdin'));
 
 const toEnv = (obj, env = {}, parent = []) => {
   if (_.isObject(obj)) {
