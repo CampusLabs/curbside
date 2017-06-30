@@ -5,5 +5,5 @@ const config = require('../config');
 module.exports = (req, res, next) => {
   const options = _.extend({}, req.body, req.query);
   const {key} = options;
-  next(key === config.key ? null : UNAUTHORIZED);
+  next(key === config.curbside.key ? null : UNAUTHORIZED);
 };

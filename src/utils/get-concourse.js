@@ -2,6 +2,7 @@ const _ = require('underscore');
 const {password, url, username, vault: {passwordKey, path, usernameKey}} = require('../config');
 const vault = require('./vault');
 const fetch = require('node-fetch');
+const memoize = require('./memoize');
 const qs = require('querystring');
 
 let token;
@@ -34,9 +35,7 @@ const setToken = async () => {
   token = value;
 };
 
-let promise;
-module.exports = () =>
-  promise || (promise = (async () => {
-    await setToken();
-    return client;
-  })());
+module.exports = memoize(async () => {
+  await setToken();
+  return client;
+});

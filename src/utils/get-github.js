@@ -1,12 +1,7 @@
-const {accessToken, vault: {accessTokenKey, path}} = require('../config').github;
+const getGithubAccessToken = require('./get-github-access-token');
+const memoize = require('./memoize');
 const Octokat = require('octokat');
-const vault = require('./vault');
 
-const getAccessToken = async () =>
-  accessToken || (await vault.get(path))[accessTokenKey];
-
-let promise;
-module.exports = () =>
-  promise || (promise = (async () =>
-    new Octokat({token: await getAccessToken()})
-  )());
+module.exports = memoize(async () =>
+  new Octokat({token: await getGithubAccessToken()})
+);
