@@ -7,7 +7,7 @@ module.exports = [
   authorize,
   (req, res, next) => {
     const {pipeline, resource, team, id} = req.params;
-    if (!team) return builds;
+    if (!team) return res.send(builds);
 
     const match = _.pick({pipeline, resource, team}, _.identity);
     const scoped = _.filter(builds, ({concourse}) =>
