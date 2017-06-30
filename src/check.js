@@ -4,13 +4,17 @@ const _ = require('underscore');
 const config = require('./config');
 const fetch = require('node-fetch');
 
-const {curbside: {url}, resource: {version: {uuid}}, webhookToken} =
-  config;
+const {
+  curbside: {url},
+  resource: {version: {concourse: {pipeline, resource, team}, id}},
+  webhookToken
+} = config;
 
 (async () => {
   try {
     const res = await fetch(
-      `${url}/builds/${uuid}?webhookToken=${webhookToken}`
+      `${url}/builds/${team}/${pipeline}/${resource}/${id}` +
+      `?webhookToken=${webhookToken}`
     );
     const data = await res.json();
     if (data.error) throw new Error(data.error);

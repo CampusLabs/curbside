@@ -8,7 +8,10 @@ express()
   .disable('x-powered-by')
   .use(bodyParser.json())
   .get('/health-check', require('../handlers/health-check'))
-  .get('/builds/:id?', require('../handlers/read-build'))
+  .get(
+    '/builds/:team?/:pipeline?/:resource?/:id?',
+    require('../handlers/read-build')
+  )
   .post('/builds', require('../handlers/create-build'))
   .use((req, res, next) => next(NOT_FOUND))
   .use(require('../handlers/error'))

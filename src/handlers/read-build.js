@@ -6,11 +6,19 @@ const builds = require('../utils/builds');
 module.exports = [
   authorize,
   (req, res, next) => {
-    const {id} = req.params;
-    const i = _.findIndex(builds, {id});
-    if ('andNewer' in req.query) return res.send(builds.slice(Math.max(0, i)));
+    const {pipeline, resource, team, id} = req.params;
+    if (!team) return builds;
 
-    const build = builds[i];
+    const match = _.pick({pipeline, resource, team}, _.identity);
+    const scoped = _.filter(builds, ({concourse}) =>
+      _.isMatch(concourse, match)
+    );
+    const i = _.findIndex(scoped, {id});
+    if (!id || 'andNewer' in req.query) {
+      return res.send(scoped.slice(Math.max(0, i)));
+    }
+
+    const build = scoped[i];
     if (build) return res.send(build);
 
     next(NOT_FOUND);
