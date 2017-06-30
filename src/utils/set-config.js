@@ -4,18 +4,13 @@ const config = require('../config');
 module.exports = o =>
   _.extend(config, {
     concourse: {
-      url: o.CONCOURSE_URL,
-      user: o.CONCOURSE_USERNAME,
-      password: o.CONCOURSE_PASSWORD,
-      vault: {
-        path: o.CONCOURSE_VAULT_PATH,
-        userKey: o.CONCOURSE_VAULT_USERNAME_KEY,
-        passwordKey: o.CONCOURSE_VAULT_PASSWORD_KEY
-      }
+      url: o.CONCOURSE_URL
     },
     curbside: {
-      key: o.CURBSIDE_KEY,
       url: o.CURBSIDE_URL
+    },
+    docker: {
+      registryConfig: JSON.parse(o.DOCKER_REGISTRY_CONFIG || '{}')
     },
     github: {
       accessToken: o.GITHUB_ACCESS_TOKEN,
@@ -25,6 +20,11 @@ module.exports = o =>
       }
     },
     maxBuilds: parseInt(o.MAX_BUILDS) || 1000,
+    resource: {
+      destination: o.RESOURCE_DESTINATION,
+      repo: o.RESOURCE_REPO,
+      version: {sha: o.RESOURCE_VERSION_SHA}
+    },
     vault: {
       auth: {
         data: JSON.parse(o.VAULT_AUTH_DATA || '{}'),
@@ -32,9 +32,5 @@ module.exports = o =>
       },
       url: o.VAULT_URL
     },
-    resource: {
-      destination: o.RESOURCE_DESTINATION,
-      repo: o.RESOURCE_REPO,
-      version: {sha: o.RESOURCE_VERSION_SHA}
-    }
+    webhookToken: o.WEBHOOK_TOKEN
   });

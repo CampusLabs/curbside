@@ -1,3 +1,8 @@
 {
+  "concourse": {
+    "team": "bogart",
+    "pipeline": "generic",
+    "resource": "curbside",
+  },
   "build": "quay.io/orgsync/curbside"
 }

@@ -1,7 +1,7 @@
 const _ = require('underscore');
 const authorize = require('./authorize');
-const getBuild = require('../utils/get-build');
-const queueBuild = require('../utils/queue-build');
+const getBuilds = require('../utils/get-builds');
+const queueBuilds = require('../utils/queue-builds');
 
 const getTags = tags => {
   if (typeof tags === 'string') tags = tags.split(',');
@@ -34,11 +34,11 @@ module.exports = [
       const options = getOptions(req);
       if (!options) return res.send({});
 
-      const build = await getBuild(options);
-      if (!build) return res.send({});
+      const builds = await getBuilds(options);
+      if (!builds) return res.send({});
 
-      queueBuild(build);
-      res.send(build);
+      await queueBuilds(builds);
+      res.send(builds);
     } catch (er) {
       next(er);
     }

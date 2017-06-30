@@ -1,17 +1,33 @@
 const _ = require('underscore');
 const getGithub = require('./get-github');
+const uuid = require('uuid/v4');
 
 const NO_REPO_REF_ERROR = _.extend(
   new Error('`repo` and `ref` are required'),
   {isPublic: true, status: 400}
 );
 
+const flattenBuilds = options => {
+  let {config} = options;
+  if (!_.isArray(config)) config = [config];
+  const shared = _.omit(options, 'config');
+  return _.map(config, config =>
+    _.extend({}, config, shared, {
+      id: uuid(),
+      tags:
+        config.tags && shared.tags ?
+        config.tags.concat(shared.tags) :
+        config.tags || shared.tags
+    })
+  );
+};
+
 module.exports = async options => {
   let {repo, ref, sha, tags} = options;
   if (!repo || !ref) throw NO_REPO_REF_ERROR;
 
   const github = await getGithub();
-  if (!sha) sha = (await github.repos(repo).commits(ref).fetch()).sha;
+  if (!sha) sha = (await github.repos(repo).commits(sha || ref).fetch()).sha;
 
   let config;
   try {
@@ -22,7 +38,7 @@ module.exports = async options => {
     if (!er.message.endsWith('Status: 404')) throw er;
   }
 
-  if (!config) return;
+  if (!config) return [];
 
   try {
     config = JSON.parse(config);
@@ -33,5 +49,5 @@ module.exports = async options => {
     );
   }
 
-  return {config, repo, ref, sha, tags};
+  return flattenBuilds({config, repo, ref, sha, tags});
 };

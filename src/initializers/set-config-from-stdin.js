@@ -16,8 +16,8 @@ const toEnv = (obj, env = {}, parent = []) => {
 };
 
 setConfig(
-  toEnv(_.extend(source, {
-    resource_destination: destination,
-    resource_version: version
-  }))
+  _.extend(toEnv(source), {
+    RESOURCE_DESTINATION: destination,
+    RESOURCE_VERSION: version
+  })
 );
