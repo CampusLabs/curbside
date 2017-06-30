@@ -3,9 +3,10 @@ const config = require('../config');
 const triggerWebhook = require('./trigger-webhook');
 
 module.exports = async newBuilds => {
-  for (let build in newBuilds) {
+  for (let build of newBuilds) {
     builds.push(build);
     if (builds.length > config.maxBuilds) builds.shift();
-    if (build.concourse) await triggerWebhook(build.concourse);
+    // XXX: Uncomment after concourse upgrade
+    // if (build.concourse) await triggerWebhook(build.concourse);
   }
 };

@@ -49,5 +49,15 @@ module.exports = async options => {
     );
   }
 
+  if (!config.concourse) {
+    throw _.extend(
+      new Error(
+        'A `concourse` object of shape `{team, pipeline, resource}` is ' +
+        'required for each curbside.json entry'
+      ),
+      {isPublic: true, status: 400}
+    );
+  }
+
   return flattenBuilds({config, repo, ref, sha, tags});
 };
