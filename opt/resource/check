@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-exec node /code/src/check
+# exec node /code/src/check
+echo '[]'
