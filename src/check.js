@@ -1,6 +1,5 @@
 require('./initializers/set-config-from-stdin');
 
-const _ = require('underscore');
 const config = require('./config');
 const fetch = require('node-fetch');
 
@@ -16,11 +15,10 @@ const {
       `${url}/builds/${team}/${pipeline}/${resource}/${id}` +
       `?webhookToken=${webhookToken}`
     );
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    const builds = await res.json();
+    if (builds.error) throw new Error(builds.error);
 
-    const versions = _.map(data, ({sha}) => ({sha}));
-    console.log(JSON.stringify(versions));
+    console.log(JSON.stringify(builds));
   } catch (er) {
     console.error(er);
     process.exit(1);
