@@ -11,7 +11,7 @@ const getTags = tags => {
 
 const getOptions = ({body, headers: {'x-github-event': event}, query}) => {
   if (event) {
-    const {
+    let {
       after: sha,
       deleted,
       ref = '',
