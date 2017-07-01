@@ -1,15 +1,15 @@
-require('./initializers/set-config-from-stdin');
-
-const {
-  concourse: {pipeline, resource, team},
-  curbside: {url},
-  resource: {version, version: {id}},
-  webhookToken
-} = require('./config');
-const getGithub = require('./utils/get-github');
-
 (async () => {
   try {
+    await require('./initializers/set-config-from-stdin')();
+
+    const {
+      concourse: {pipeline, resource, team},
+      curbside: {url},
+      resource: {version, version: {id}},
+      webhookToken
+    } = require('./config');
+    const getGithub = require('./utils/get-github');
+
     const res = await fetch(
       `${url}/builds/${team}/${pipeline}/${resource}/${id}` +
       `?webhookToken=${webhookToken}`

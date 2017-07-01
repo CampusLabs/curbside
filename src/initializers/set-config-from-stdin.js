@@ -1,13 +1,8 @@
 const _ = require('underscore');
-const fs = require('fs');
+const getStdinJson = require('../utils/get-stdin-json');
 const setConfig = require('../utils/set-config');
 
 const {2: destination} = process.argv;
-const {fd} = process.stdin;
-const {size} = fs.fstatSync(fd);
-const stdin = Buffer.alloc(size);
-fs.readSync(fd, stdin, 0, size);
-const {source, version: {id} = {}} = JSON.parse(stdin);
 
 const toEnv = (obj, env = {}, parent = []) => {
   if (_.isObject(obj)) {
@@ -19,9 +14,10 @@ const toEnv = (obj, env = {}, parent = []) => {
   return env;
 };
 
-setConfig(
-  _.extend(toEnv(source), {
+module.exports = async () => {
+  const {source, version: {id} = {}} = await getStdinJson();
+  setConfig(_.extend(toEnv(source), {
     RESOURCE_DESTINATION: destination,
     RESOURCE_VERSION_ID: id
-  })
-);
+  }));
+};

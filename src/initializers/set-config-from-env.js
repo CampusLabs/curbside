@@ -1,3 +1,3 @@
 const setConfig = require('../utils/set-config');
 
-setConfig(process.env);
+module.exports = () => setConfig(process.env);
