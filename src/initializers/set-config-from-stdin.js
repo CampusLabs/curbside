@@ -3,8 +3,11 @@ const fs = require('fs');
 const setConfig = require('../utils/set-config');
 
 const {2: destination} = process.argv;
+const {fd} = process.stdin;
+const {size} = fs.fstatSync(fd);
+const stdin = Buffer.alloc(size);
 const {source, version: {id} = {}} = JSON.parse(
-  fs.readFileSync(process.stdin.fd)
+  fs.readSync(fd, stdin, 0, size, 0)
 );
 
 const toEnv = (obj, env = {}, parent = []) => {
