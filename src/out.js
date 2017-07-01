@@ -8,6 +8,7 @@
     let {resource: {destination, params: {version}}} = require('./config');
 
     version = JSON.parse(fs.readFileSync(`${destination}/${version}`));
+    console.error(version);
     const [repo, sha] = version.build.split(' ');
     const github = await getGithub();
     const commit = await github.repos(repo).commits(sha).fetch();
