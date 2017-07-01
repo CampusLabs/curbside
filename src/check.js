@@ -9,20 +9,20 @@
     const {
       concourse: {pipeline, resource, team},
       curbside: {url},
-      resource: {version: {id}},
+      resource: {version: {build}},
       webhookToken
     } = config;
 
     const res = await fetch(
       `${url}/builds/${team}/${pipeline}/${resource}` +
-      (id ? `/${Buffer.from(id).toString('hex')}` : '') +
+      (build ? `/${Buffer.from(build).toString('hex')}` : '') +
       `?andNewer&webhookToken=${webhookToken}`
     );
     const builds = await res.json();
     if (builds.error) throw new Error(builds.error);
 
     console.log(JSON.stringify(_.map(builds, ({repo, ref, sha, tags}) => ({
-      id: [repo, ref, sha].concat(tags).join(' ')
+      build: [repo, ref, sha].concat(tags).join(' ')
     }))));
   } catch (er) {
     console.error(er);

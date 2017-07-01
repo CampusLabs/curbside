@@ -5,7 +5,7 @@
     const {
       concourse: {pipeline, resource, team},
       curbside: {url},
-      resource: {version, version: {id}},
+      resource: {version, version: {build}},
       webhookToken
     } = require('./config');
     const fetch = require('node-fetch');
@@ -13,7 +13,7 @@
 
     const res = await fetch(
       `${url}/builds/${team}/${pipeline}/${resource}` +
-      `/${Buffer.from(id).toString('hex')}?webhookToken=${webhookToken}`
+      `/${Buffer.from(build).toString('hex')}?webhookToken=${webhookToken}`
     );
     const {repo, sha} = await res.json();
     const github = await getGithub();

@@ -18,6 +18,6 @@ module.exports = async () => {
   const {source, version} = await getStdinJson();
   setConfig(_.extend(toEnv(source), {
     RESOURCE_DESTINATION: destination,
-    RESOURCE_VERSION_ID: version && version.id
+    RESOURCE_VERSION_BUILD: version && version.build
   }));
 };

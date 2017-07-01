@@ -26,7 +26,7 @@ module.exports = o =>
     resource: {
       destination: o.RESOURCE_DESTINATION,
       repo: o.RESOURCE_REPO,
-      version: {id: o.RESOURCE_VERSION_ID}
+      version: {build: o.RESOURCE_VERSION_BUILD}
     },
     vault: {
       auth: {

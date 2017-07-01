@@ -10,7 +10,7 @@ const flattenBuilds = options => {
   let {config, repo, ref, sha, tags} = options;
   if (!_.isArray(config)) config = [config];
   return _.map(config, (config, i) =>
-    _.extend({}, config, {repo, sha}, {
+    _.extend({}, config.concourse, {repo, sha}, {
       tags: [].concat(
         ref === sha ? [] : `ref=${ref}`,
         i === 0 ? [] : `config=${i}`,

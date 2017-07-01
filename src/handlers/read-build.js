@@ -10,9 +10,7 @@ module.exports = [
     if (!team) return res.send(builds);
 
     const match = _.pick({pipeline, resource, team}, _.identity);
-    const scoped = _.filter(builds, ({concourse}) =>
-      _.isMatch(concourse, match)
-    );
+    const scoped = _.filter(builds, match);
     if (!id) return res.send(scoped);
 
     const [repo, sha, ...tags] = Buffer.from(id, 'hex').toString().split(' ');
