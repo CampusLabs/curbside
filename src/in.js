@@ -25,7 +25,7 @@
           .on('finish', resolve)
       );
 
-    const [repo, sha] = build;
+    const [repo, sha] = build.split(' ');
     const accessToken = await getGithubAccessToken();
     const apiUrl = `https://api.github.com/repos/${repo}/tarball/${sha}`;
     await writeSource(await fetch(`${apiUrl}?access_token=${accessToken}`));

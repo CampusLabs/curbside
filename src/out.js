@@ -2,20 +2,10 @@
   try {
     await require('./initializers/set-config-from-stdin')();
 
-    const {
-      concourse: {pipeline, resource, team},
-      curbside: {url},
-      resource: {version, version: {build}},
-      webhookToken
-    } = require('./config');
-    const fetch = require('node-fetch');
+    const {resource: {version, version: {build}}} = require('./config');
     const getGithub = require('./utils/get-github');
 
-    const res = await fetch(
-      `${url}/builds/${team}/${pipeline}/${resource}` +
-      `/${Buffer.from(build).toString('hex')}?webhookToken=${webhookToken}`
-    );
-    const {repo, sha} = await res.json();
+    const [repo, sha] = build.split(' ');
     const github = await getGithub();
     const commit = await github.repos(repo).commits(sha).fetch();
     console.log('Build...', commit);
