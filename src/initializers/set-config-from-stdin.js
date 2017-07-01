@@ -6,9 +6,8 @@ const {2: destination} = process.argv;
 const {fd} = process.stdin;
 const {size} = fs.fstatSync(fd);
 const stdin = Buffer.alloc(size);
-const {source, version: {id} = {}} = JSON.parse(
-  fs.readSync(fd, stdin, 0, size, 0)
-);
+fs.readSync(fd, stdin, 0, size, 0);
+const {source, version: {id} = {}} = JSON.parse(stdin);
 
 const toEnv = (obj, env = {}, parent = []) => {
   if (_.isObject(obj)) {
