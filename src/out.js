@@ -10,6 +10,7 @@
     version = JSON.parse(fs.readFileSync(`${destination}/${version}`));
     console.error(version);
     const [repo, sha] = version.build.split(' ');
+    console.error(version.build, repo, sha);
     const github = await getGithub();
     const commit = await github.repos(repo).commits(sha).fetch();
     console.log('Build...', commit);
