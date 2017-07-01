@@ -8,11 +8,12 @@
       resource: {version, version: {id}},
       webhookToken
     } = require('./config');
+    const fetch = require('node-fetch');
     const getGithub = require('./utils/get-github');
 
     const res = await fetch(
-      `${url}/builds/${team}/${pipeline}/${resource}/${id}` +
-      `?webhookToken=${webhookToken}`
+      `${url}/builds/${team}/${pipeline}/${resource}` +
+      `/${Buffer.from(id).toString('hex')}?webhookToken=${webhookToken}`
     );
     const {repo, sha} = await res.json();
     const github = await getGithub();

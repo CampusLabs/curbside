@@ -14,13 +14,16 @@
     } = config;
 
     const res = await fetch(
-      `${url}/builds/${team}/${pipeline}/${resource}${id ? `/${id}` : ''}` +
+      `${url}/builds/${team}/${pipeline}/${resource}` +
+      (id ? `/${Buffer.from(id).toString('hex')}` : '') +
       `?andNewer&webhookToken=${webhookToken}`
     );
     const builds = await res.json();
     if (builds.error) throw new Error(builds.error);
 
-    console.log(JSON.stringify(_.map(builds, ({id}) => ({id}))));
+    console.log(JSON.stringify(_.map(builds, ({repo, ref, sha, tags}) => ({
+      id: [repo, ref, sha].concat(tags).join(' ')
+    }))));
   } catch (er) {
     console.error(er);
     process.exit(1);

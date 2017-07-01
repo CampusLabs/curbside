@@ -1,6 +1,5 @@
 const _ = require('underscore');
 const getGithub = require('./get-github');
-const uuid = require('uuid/v4');
 
 const NO_REPO_REF_ERROR = _.extend(
   new Error('`repo` and `ref` are required'),
@@ -8,16 +7,17 @@ const NO_REPO_REF_ERROR = _.extend(
 );
 
 const flattenBuilds = options => {
-  let {config} = options;
+  let {config, repo, ref, sha, tags} = options;
   if (!_.isArray(config)) config = [config];
-  const shared = _.omit(options, 'config');
-  return _.map(config, config =>
-    _.extend({}, config, shared, {
-      id: uuid(),
-      tags:
-        config.tags && shared.tags ?
-        config.tags.concat(shared.tags) :
-        config.tags || shared.tags
+  return _.map(config, (config, i) =>
+    _.extend({}, config, {repo, sha}, {
+      tags: [].concat(
+        ref === sha ? [] : `ref=${ref}`,
+        i === 0 ? [] : `config=${i}`,
+        config.tags && tags ?
+        config.tags.concat(tags) :
+        config.tags || tags || []
+      )
     })
   );
 };
