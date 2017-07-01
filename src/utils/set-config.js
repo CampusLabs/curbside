@@ -25,7 +25,7 @@ module.exports = o =>
     maxBuilds: parseInt(o.MAX_BUILDS) || 1000,
     resource: {
       destination: o.RESOURCE_DESTINATION,
-      repo: o.RESOURCE_REPO,
+      params: o.RESOURCE_PARAMS,
       version: {build: o.RESOURCE_VERSION_BUILD}
     },
     vault: {

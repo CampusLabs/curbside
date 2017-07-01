@@ -6,6 +6,7 @@
       resource: {destination, version, version: {build}}
     } = require('./config');
     const fetch = require('node-fetch');
+    const fs = require('fs');
     const getGithubAccessToken = require('./utils/get-github-access-token');
     const tar = require('tar-fs');
     const zlib = require('zlib');
@@ -29,6 +30,7 @@
     const accessToken = await getGithubAccessToken();
     const apiUrl = `https://api.github.com/repos/${repo}/tarball/${sha}`;
     await writeSource(await fetch(`${apiUrl}?access_token=${accessToken}`));
+    fs.writeFileSync(`${destination}/version`, JSON.stringify(version));
     console.log(JSON.stringify({version}));
   } catch (er) {
     console.error(er);
