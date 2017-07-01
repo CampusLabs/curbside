@@ -16,6 +16,7 @@ const toEnv = (obj, env = {}, parent = []) => {
 
 module.exports = async () => {
   const {source, version} = await getStdinJson();
+  console.error(source, version);
   setConfig(_.extend(toEnv(source), {
     RESOURCE_DESTINATION: destination,
     RESOURCE_VERSION_ID: version && version.id
