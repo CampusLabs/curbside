@@ -2,6 +2,7 @@
   try {
     await require('./initializers/set-config-from-stdin')();
 
+    const _ = require('underscore');
     const config = require('./config');
     const fetch = require('node-fetch');
 
@@ -19,7 +20,7 @@
     const builds = await res.json();
     if (builds.error) throw new Error(builds.error);
 
-    console.log(JSON.stringify(builds));
+    console.log(JSON.stringify(_.map(builds, ({id}) => ({id}))));
   } catch (er) {
     console.error(er);
     process.exit(1);
