@@ -6,7 +6,8 @@ const {2: destination} = process.argv;
 const {fd} = process.stdin;
 const {size} = fs.fstatSync(fd);
 const stdin = Buffer.alloc(size);
-fs.readSync(fd, stdin, 0, size, 0);
+console.error(process.argv, fd, stdin, size);
+fs.readSync(fd, stdin, 0, size);
 const {source, version: {id} = {}} = JSON.parse(stdin);
 
 const toEnv = (obj, env = {}, parent = []) => {
