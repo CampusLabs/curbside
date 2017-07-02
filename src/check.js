@@ -21,8 +21,8 @@
     const builds = await res.json();
     if (builds.error) throw new Error(builds.error);
 
-    console.log(JSON.stringify(_.map(builds, ({repo, ref, sha, tags}) => ({
-      build: [repo, ref, sha].concat(tags).join(' ')
+    console.log(JSON.stringify(_.map(builds, ({repo, sha, tags}) => ({
+      build: [].concat(repo, sha, tags).join(' ')
     }))));
   } catch (er) {
     console.error(er);

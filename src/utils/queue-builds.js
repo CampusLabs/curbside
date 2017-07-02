@@ -7,6 +7,6 @@ module.exports = async newBuilds => {
     builds.push(build);
     if (builds.length > config.maxBuilds) builds.shift();
     // XXX: Uncomment after concourse upgrade
-    // if (build.concourse) await triggerWebhook(build.concourse);
+    // await triggerWebhook(build);
   }
 };
