@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec node /code/src/tasks/build-and-push

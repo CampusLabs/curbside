@@ -1,13 +1,11 @@
 (async () => {
   try {
-    await require('./initializers/set-config-from-stdin')();
+    await require('../initializers/set-config-from-stdin')();
 
-    const {
-      resource: {destination, version, version: {build}}
-    } = require('./config');
+    const config = require('../config');
     const fetch = require('node-fetch');
     const fs = require('fs');
-    const getGithubAccessToken = require('./utils/get-github-access-token');
+    const getGithubAccessToken = require('../utils/get-github-access-token');
     const tar = require('tar-fs');
     const zlib = require('zlib');
 
@@ -26,11 +24,12 @@
           .on('finish', resolve)
       );
 
+    const {destination, version, version: {build}} = config.resource;
     const [repo, sha] = build.split(' ');
     const accessToken = await getGithubAccessToken();
     const apiUrl = `https://api.github.com/repos/${repo}/tarball/${sha}`;
     await writeSource(await fetch(`${apiUrl}?access_token=${accessToken}`));
-    fs.writeFileSync(`${destination}/version`, JSON.stringify(version));
+    fs.writeFileSync(`${destination}/config`, JSON.stringify(config));
     console.log(JSON.stringify({version}));
   } catch (er) {
     console.error(er);
