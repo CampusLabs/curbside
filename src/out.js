@@ -11,7 +11,6 @@
     const [repo, sha] = version.build.split(' ');
     const github = await getGithub();
     const commit = await github.repos(repo).commits(sha).fetch();
-    console.log('Build...', commit);
     console.log(JSON.stringify({version}));
   } catch (er) {
     console.error(er);
