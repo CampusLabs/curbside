@@ -2,9 +2,6 @@
 
 set -e
 
-echo 'Starting docker...'
-dockerd
-until docker info >/dev/null 2>&1; do sleep 1; done
-echo 'Docker is running'
+/code/bin/start-docker
 
 exec node /code/src/tasks/build
