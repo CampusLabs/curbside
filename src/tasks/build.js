@@ -66,7 +66,10 @@
         docker.modem.followProgress(
           stream,
           er => er ? reject(er) : resolve(),
-          event => console.log(event)
+          ({id, progress, status, stream}) =>
+            process.stdout.write(
+              _.compact([id, status, progress, stream]).join(' ')
+            )
         )
       );
 

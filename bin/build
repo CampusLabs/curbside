@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-set -e
-
 service docker start
 
-exec node /code/src/tasks/build
+node /code/src/tasks/build
+STATUS=$?
+
+service docker stop
+
+exit $STATUS
