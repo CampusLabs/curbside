@@ -2,6 +2,6 @@
 
 set -e
 
-/code/bin/start-docker
+service docker start
 
 exec node /code/src/tasks/build
