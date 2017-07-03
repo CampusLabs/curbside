@@ -4,7 +4,7 @@
 
     const _ = require('underscore');
     const {promisify} = require('util');
-    const Docker = require('docker');
+    const Docker = require('dockerode');
     const getGithub = require('../utils/get-github');
     const fs = require('fs');
     const path = require('path');
