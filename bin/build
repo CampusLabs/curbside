@@ -3,7 +3,7 @@
 set -e
 
 echo 'Starting docker...'
-dockerd >/dev/null 2>&1 &
+dockerd
 until docker info >/dev/null 2>&1; do sleep 1; done
 echo 'Docker is running'
 
