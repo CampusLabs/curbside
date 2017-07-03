@@ -66,7 +66,7 @@
         docker.modem.followProgress(
           stream,
           er => er ? reject(er) : resolve(),
-          ({stream}) => console.log(stream)
+          event => console.log(event)
         )
       );
 
