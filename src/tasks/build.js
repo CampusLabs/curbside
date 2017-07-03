@@ -5,7 +5,9 @@
     const _ = require('underscore');
     const {promisify} = require('util');
     const Docker = require('docker');
-    const getGithub = require('../utils/get-github');const
+    const getGithub = require('../utils/get-github');
+    const fs = require('fs');
+    const path = require('path');
     const tar = require('tar-fs');
     const zlib = require('zlib');
 
@@ -21,7 +23,8 @@
       const {repo} = image;
       if (!repo) return;
 
-      const {buildArgs, context, tagPrefix, tags, tagSuffix} = image;
+      const {buildArgs, context, dockerfile, tagPrefix, tags, tagSuffix} =
+        image;
       return _.extend(image, {
         buildArgs: buildArgs || {},
         context: context || '.',
@@ -29,27 +32,26 @@
         repo,
         tags: _.unique([].concat(
           `${repo}:${tagPrefix || ''}${sha}${tagSuffix || ''}`,
-          `${repo}:${tagPrefix || ''}${ref}${tagSuffix || ''}`
+          `${repo}:${tagPrefix || ''}${ref}${tagSuffix || ''}`,
           tags || []
-        ));
+        ))
       });
-    }
+    };
 
-    const pullExisting = async ({image: {repo: imageRepo, tags}, repo}) => {
+    const pullImages = async ({image: {repo: imageRepo, tags}, repo}) => {
       try {
-        await pull(tags[0]);
+        await pullImage(tags[0]);
         return true;
       } catch (er) {
         try {
           const github = await getGithub();
           const commit = await github.repos(repo).commits(sha).fetch();
-          const parentShas = _.map(commit.parents, 'sha');
           await Promise.all(_.map(commit.parents, async ({sha}) => {
-            try { await pull(`${imageRepo}:${sha}`); } catch (er) {}
+            try { await pullImage(`${imageRepo}:${sha}`); } catch (er) {}
           }));
         } catch (er) {}
       }
-    }
+    };
 
     const getAuthConfig = tag => {
       let host = tag.split('/').slice(-3, -2)[0];
@@ -57,22 +59,23 @@
       return registryConfig[host];
     };
 
-    const handleStream =  stream =>
+    const handleStream = stream =>
       new Promise((resolve, reject) =>
         docker.modem.followProgress(
           stream,
           er => er ? reject(er) : resolve(),
           ({stream}) => console.log(stream)
-        );
+        )
+      );
 
-    const pull = async tag => {
+    const pullImage = async tag => {
       const stream = await call(docker, 'pull', tag, {
         authconfig: getAuthConfig(tag)
       });
       try { await handleStream(stream); } catch (er) {}
     };
 
-    const build = async image => {
+    const buildImage = async image => {
       const {buildArgs, context, dockerfile, tags} = image;
       const tarball = tar
         .pack(path.resolve('./curbside/source', context))
@@ -84,14 +87,13 @@
         dockerfile
       });
       await handleStream(stream);
-      const image = docker.getImage(tags[0]);
       return Promise.all(_.map(tags.slice(1), fullTag => {
         const [repo, tag] = fullTag.split(':');
-        return call(image, 'tag', {repo, tag});
+        return call(docker.getImage(tags[0]), 'tag', {repo, tag});
       }));
     };
 
-    const push = async tag => {
+    const pushImage = async tag => {
       const stream = await call(docker.getImage(tag), 'push', {
         authconfig: getAuthConfig(tag)
       });
@@ -115,9 +117,9 @@
       return console.log('No `image.repo` specified in `curbside.json`');
     }
 
-    await pullExisting({image, repo});
-    await build(image);
-    await Promise.all(_.map(tags, push));
+    await pullImages({image, repo});
+    await buildImage(image);
+    await Promise.all(_.map(tags, pushImage));
   } catch (er) {
     console.error(er);
     process.exit(1);
