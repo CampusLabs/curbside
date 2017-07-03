@@ -119,8 +119,13 @@
       return console.log('No `image.repo` specified in `curbside.json`');
     }
 
+    console.log('Pulling...');
     await pullImages({image, repo});
+
+    console.log('Building...');
     await buildImage(image);
+
+    console.log('Pushing...');
     await Promise.all(_.map(tags, pushImage));
   } catch (er) {
     console.error(er);
