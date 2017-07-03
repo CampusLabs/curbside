@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
+dockerd >/dev/null 2>&1 &
+until docker info >/dev/null 2>&1; do sleep 1; done
 exec node /code/src/tasks/build

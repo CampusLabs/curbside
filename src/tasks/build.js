@@ -41,9 +41,11 @@
     const pullImages = async ({image: {repo: imageRepo, tags}, repo}) => {
       try {
         await pullImage(tags[0]);
-        return true;
       } catch (er) {
         try {
+          await Promise.all(_.map(tags.slice(1), async tag => {
+            try { pullImage(tag); } catch (er) {}
+          }));
           const github = await getGithub();
           const commit = await github.repos(repo).commits(sha).fetch();
           await Promise.all(_.map(commit.parents, async ({sha}) => {
