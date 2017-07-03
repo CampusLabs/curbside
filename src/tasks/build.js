@@ -68,7 +68,8 @@
           er => er ? reject(er) : resolve(),
           ({id, progress, status, stream}) =>
             process.stdout.write(
-              _.compact([id, status, progress, stream]).join(' ')
+              id ? _.compact([id, status, progress]).join(' ') + '\n' :
+              stream || ''
             )
         )
       );
@@ -99,6 +100,8 @@
     };
 
     const pushImage = async tag => {
+      console.log('Trying to push', tag);
+      console.log('authconfig', getAuthConfig(tag));
       const stream = await call(docker.getImage(tag), 'push', {
         authconfig: getAuthConfig(tag)
       });
@@ -122,8 +125,8 @@
       return console.log('No `image.repo` specified in `curbside.json`');
     }
 
-    console.log('Pulling...');
-    await pullImages({image, repo});
+    // console.log('Pulling...');
+    // await pullImages({image, repo});
 
     console.log('Building...');
     await buildImage(image);
@@ -131,7 +134,7 @@
     console.log('Pushing...');
     await Promise.all(_.map(tags, pushImage));
   } catch (er) {
-    console.error(er);
+    console.error(er.toString());
     process.exit(1);
   }
 })();
