@@ -15,44 +15,35 @@
 
     const call = (obj, key, ...args) => promisify(obj[key].bind(obj))(...args);
 
-    const getImage = ({image, sha, ref}) => {
+    const getImage = async ({image, ref, repo, sha}) => {
       if (!image) return;
 
       if (typeof image === 'string') image = {repo: image};
 
-      const {repo} = image;
-      if (!repo) return;
+      const {repo: imageRepo} = image;
+      if (!imageRepo) return;
 
-      const {buildArgs, context, dockerfile, tagPrefix, tags, tagSuffix} =
-        image;
+      let {buildArgs, context, dockerfile, tagPrefix, tags, tagSuffix} = image;
+      tags = _.unique([].concat(
+        `${imageRepo}:${tagPrefix || ''}${sha}${tagSuffix || ''}`,
+        `${imageRepo}:${tagPrefix || ''}${ref}${tagSuffix || ''}`,
+        tags || []
+      ));
+
+      const github = await getGithub();
+      const commit = await github.repos(repo).commits(sha).fetch();
+      const cacheFrom = tags.concat(_.map(commit.parents, ({sha}) =>
+        `${imageRepo}:${sha}`
+      ));
+
       return _.extend(image, {
         buildArgs: buildArgs || {},
+        cacheFrom,
         context: context || '.',
         dockerfile: dockerfile || 'Dockerfile',
-        repo,
-        tags: _.unique([].concat(
-          `${repo}:${tagPrefix || ''}${sha}${tagSuffix || ''}`,
-          `${repo}:${tagPrefix || ''}${ref}${tagSuffix || ''}`,
-          tags || []
-        ))
+        repo: imageRepo,
+        tags
       });
-    };
-
-    const pullImages = async ({image: {repo: imageRepo, tags}, repo}) => {
-      try {
-        await pullImage(tags[0]);
-      } catch (er) {
-        try {
-          await Promise.all(_.map(tags.slice(1), async tag => {
-            try { await pullImage(tag); } catch (er) {}
-          }));
-          const github = await getGithub();
-          const commit = await github.repos(repo).commits(sha).fetch();
-          await Promise.all(_.map(commit.parents, async ({sha}) => {
-            try { await pullImage(`${imageRepo}:${sha}`); } catch (er) {}
-          }));
-        } catch (er) {}
-      }
     };
 
     const getAuthConfig = tag => {
@@ -74,23 +65,17 @@
         )
       );
 
-    const pullImage = async tag => {
-      const stream = await call(docker, 'pull', tag, {
-        authconfig: getAuthConfig(tag)
-      });
-      try { await handleStream(stream); } catch (er) {}
-    };
-
     const buildImage = async image => {
-      const {buildArgs, context, dockerfile, tags} = image;
+      const {buildArgs, cacheFrom, context, dockerfile, tags} = image;
       const tarball = tar
         .pack(path.resolve('./curbside/source', context))
         .pipe(zlib.createGzip());
       const stream = await call(docker, 'buildImage', tarball, {
-        registryconfig: registryConfig,
         buildargs: buildArgs,
-        t: tags[0],
-        dockerfile
+        cachefrom: cacheFrom,
+        dockerfile,
+        registryconfig: registryConfig,
+        t: tags[0]
       });
       await handleStream(stream);
       return Promise.all(_.map(tags.slice(1), fullTag => {
@@ -118,13 +103,10 @@
     if (!_.isArray(configs)) configs = [configs];
     const config = configs[i];
 
-    const image = getImage(_.extend({}, config, {sha, ref}));
+    const image = await getImage(_.extend({}, config, {ref, repo, sha}));
     if (!image) {
       return console.log('No `image.repo` specified in `curbside.json`');
     }
-
-    console.log('Pulling...');
-    await pullImages({image, repo});
 
     console.log('Building...');
     await buildImage(image);
