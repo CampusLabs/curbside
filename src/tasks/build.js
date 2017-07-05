@@ -9,6 +9,7 @@
     const fs = require('fs');
     const path = require('path');
     const tar = require('tar-fs');
+    const vault = require('../utils/vault');
     const zlib = require('zlib');
 
     const docker = new Docker();
@@ -23,7 +24,7 @@
       const {repo: imageRepo} = image;
       if (!imageRepo) return;
 
-      let {buildArgs, context, dockerfile, tagPrefix, tags, tagSuffix} = image;
+      let {context, dockerfile, tagPrefix, tags, tagSuffix} = image;
       tags = _.unique([].concat(
         `${imageRepo}:${tagPrefix || ''}${sha}${tagSuffix || ''}`,
         `${imageRepo}:${tagPrefix || ''}${ref}${tagSuffix || ''}`,
@@ -39,13 +40,33 @@
       );
 
       return _.extend(image, {
-        buildArgs: buildArgs || {},
+        buildArgs: await getBuildArgs({image, ref, repo, sha}),
         cacheFrom: await getCacheFrom(cacheTags),
         context: context || '.',
         dockerfile: dockerfile || 'Dockerfile',
         repo: imageRepo,
         tags
       });
+    };
+
+    const getBuildArgs = async ({
+      image: {buildArgs, vaultArgs},
+      ref,
+      repo,
+      sha
+    }) => {
+      const variables = {REF: ref, REPO: repo, SHA: sha};
+      for (let key in vaultArgs || {}) {
+        const {path, key: vaultKey} = vaultArgs[key];
+        variables[key] = await vault.get(path)[vaultKey];
+      }
+      return _.mapObject(buildArgs || {}, str =>
+        _.reduce(
+          variables,
+          (str, val, key) => str.replace(new RegExp(`{{${key}}}`, 'g'), val),
+          str
+        )
+      );
     };
 
     const getAuthConfig = tag => {
