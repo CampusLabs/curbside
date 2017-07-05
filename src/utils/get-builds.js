@@ -6,11 +6,21 @@ const NO_REPO_REF_ERROR = _.extend(
   {isPublic: true, status: 400}
 );
 
+const NO_CONCOURSE_ERROR = _.extend(
+  new Error(
+    'A `concourse` object of shape `{team, pipeline, resource}` is ' +
+    'required for each curbside.json entry'
+  ),
+  {isPublic: true, status: 400}
+);
+
 const flattenBuilds = options => {
   let {config, repo, ref, sha, tags} = options;
   if (!_.isArray(config)) config = [config];
-  return _.map(config, (config, i) =>
-    _.extend({}, config.concourse, {repo, sha}, {
+  return _.map(config, (config, i) => {
+    if (!config.concourse) throw NO_CONCOURSE_ERROR;
+
+    return _.extend({}, config.concourse, {repo, sha}, {
       tags: [].concat(
         ref === sha ? [] : `ref=${ref}`,
         i === 0 ? [] : `config=${i}`,
@@ -18,8 +28,8 @@ const flattenBuilds = options => {
         config.tags.concat(tags) :
         config.tags || tags || []
       )
-    })
-  );
+    });
+  });
 };
 
 module.exports = async options => {
@@ -45,16 +55,6 @@ module.exports = async options => {
   } catch (er) {
     throw _.extend(
       new Error(`Unable to parse curbside.json. ${er}`),
-      {isPublic: true, status: 400}
-    );
-  }
-
-  if (!config.concourse) {
-    throw _.extend(
-      new Error(
-        'A `concourse` object of shape `{team, pipeline, resource}` is ' +
-        'required for each curbside.json entry'
-      ),
       {isPublic: true, status: 400}
     );
   }
