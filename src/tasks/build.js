@@ -130,7 +130,7 @@
     await buildImage(image);
 
     console.log('Pushing...');
-    await Promise.all(_.map(image.tags, pushImage));
+    for (let tag of image.tags) await pushImage(tag);
   } catch (er) {
     console.error(er.toString());
     process.exit(1);
