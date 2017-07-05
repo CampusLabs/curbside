@@ -67,19 +67,6 @@
         )
       );
 
-    const pullCache = async ({cacheFrom}) => {
-      for (let tag of cacheFrom) {
-        try { return await pullImage(tag); } catch (er) {}
-      }
-    };
-
-    const pullImage = async tag => {
-      const stream = await call(docker, 'pull', tag, {
-        authconfig: getAuthConfig(tag)
-      });
-      try { await handleStream(stream); } catch (er) {}
-    };
-
     const buildImage = async image => {
       const {buildArgs, cacheFrom, context, dockerfile, tags} = image;
       const tarball = tar
@@ -122,9 +109,6 @@
     if (!image) {
       return console.log('No `image.repo` specified in `curbside.json`');
     }
-
-    console.log('Pulling cache...');
-    await pullCache(image);
 
     console.log('Building...');
     await buildImage(image);
