@@ -32,9 +32,11 @@
 
       const github = await getGithub();
       const commit = await github.repos(repo).commits(sha).fetch();
-      const cacheFrom = tags.concat(_.map(commit.parents, ({sha}) =>
-        `${imageRepo}:${sha}`
-      ));
+      const cacheFrom = [].concat(
+        tags[0],
+        _.map(commit.parents, ({sha}) => `${imageRepo}:${sha}`),
+        tags.slice(1)
+      );
 
       return _.extend(image, {
         buildArgs: buildArgs || {},
@@ -64,6 +66,19 @@
             )
         )
       );
+
+    const pullCache = async ({cacheFrom}) => {
+      for (let tag of cacheFrom) {
+        try { return await pullImage(tag); } catch (er) {}
+      }
+    };
+
+    const pullImage = async tag => {
+      const stream = await call(docker, 'pull', tag, {
+        authconfig: getAuthConfig(tag)
+      });
+      try { await handleStream(stream); } catch (er) {}
+    };
 
     const buildImage = async image => {
       const {buildArgs, cacheFrom, context, dockerfile, tags} = image;
@@ -107,6 +122,9 @@
     if (!image) {
       return console.log('No `image.repo` specified in `curbside.json`');
     }
+
+    console.log('Pulling cache...');
+    await pullCache(image);
 
     console.log('Building...');
     await buildImage(image);
