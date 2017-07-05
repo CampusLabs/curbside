@@ -32,7 +32,7 @@
 
       const github = await getGithub();
       const commit = await github.repos(repo).commits(sha).fetch();
-      const cacheFrom = [].concat(
+      const cacheTags = [].concat(
         tags[0],
         _.map(commit.parents, ({sha}) => `${imageRepo}:${sha}`),
         tags.slice(1)
@@ -40,7 +40,7 @@
 
       return _.extend(image, {
         buildArgs: buildArgs || {},
-        cacheFrom,
+        cacheFrom: await getCacheFrom(cacheTags),
         context: context || '.',
         dockerfile: dockerfile || 'Dockerfile',
         repo: imageRepo,
@@ -66,6 +66,22 @@
             )
         )
       );
+
+    const getCacheFrom = async ({cacheFrom}) => {
+      for (let tag of cacheFrom) {
+        try {
+          await pullImage(tag);
+          return [tag];
+        } catch (er) {}
+      }
+    };
+
+    const pullImage = async tag => {
+      const stream = await call(docker, 'pull', tag, {
+        authconfig: getAuthConfig(tag)
+      });
+      try { await handleStream(stream); } catch (er) {}
+    };
 
     const buildImage = async image => {
       const {buildArgs, cacheFrom, context, dockerfile, tags} = image;
