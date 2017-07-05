@@ -68,7 +68,7 @@
       );
 
     const getCacheFrom = async ({cacheFrom}) => {
-      for (let tag of cacheFrom) {
+      for (let tag in cacheFrom) {
         try {
           await pullImage(tag);
           return [tag];
