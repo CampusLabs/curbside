@@ -153,7 +153,7 @@
     console.log('Pushing...');
     for (let tag of image.tags) await pushImage(tag);
 
-    fs.writeSync(3, Buffer.from(JSON.stringify({version})));
+    fs.writeSync(3, JSON.stringify({version}));
   } catch (er) {
     console.error(er.toString());
     process.exit(1);
