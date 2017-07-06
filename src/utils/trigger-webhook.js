@@ -7,7 +7,7 @@ module.exports = async ({team, pipeline, resource}) => {
     `${concourse.url}/api/v1/teams/${team}/pipelines/${pipeline}/resources/` +
     `${resource}/check/webhook?webhook_token=${webhookToken}`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {method: 'POST'});
     if (res.status >= 400) throw new Error(await res.text());
   } catch (er) {
     throw _.extend(
