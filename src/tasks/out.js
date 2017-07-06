@@ -13,6 +13,7 @@
     const zlib = require('zlib');
 
     const docker = new Docker();
+    const {docker: {registryConfig}} = require('../config');
 
     const call = (obj, key, ...args) => promisify(obj[key].bind(obj))(...args);
 
@@ -130,9 +131,8 @@
       await handleStream(stream);
     };
 
-    const {docker: {registryConfig}, resource: {version, version: {build}}} =
-      require('../config');
-    const [repo, sha, ...tags] = build.split(' ');
+    const version = JSON.parse(fs.readFileSync('./curbside/version'));
+    const [repo, sha, ...tags] = version.build.split(' ');
     const kv = _.invoke(tags, 'split', '=');
     const ref = (_.find(kv, {0: 'ref'}) || ['ref', sha])[1];
     const i = (_.find(kv, {0: 'config'}) || ['config', 0])[1];

@@ -30,6 +30,7 @@
     const apiUrl = `https://api.github.com/repos/${repo}/tarball/${sha}`;
     await writeSource(await fetch(`${apiUrl}?access_token=${accessToken}`));
     fs.writeFileSync(`${destination}/status`, build);
+    fs.writeFileSync(`${destination}/version`, JSON.stringify(version));
     fs.writeSync(3, JSON.stringify({version}));
   } catch (er) {
     console.error(er);
