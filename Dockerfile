@@ -1,5 +1,7 @@
 FROM node:8.1.3
 
+WORKDIR /code
+
 RUN apt-get update && \
     apt-get install -y \
       apt-transport-https \
@@ -11,9 +13,9 @@ RUN apt-get update && \
       $(lsb_release -cs) \
       stable" && \
     apt-get update && \
-    apt-get install -y docker-ce
-
-WORKDIR /code
+    apt-get install -y docker-ce && \
+    mkdir docker-data && \
+    ln -s /code/docker-data /var/lib/docker
 
 COPY package.json /code/package.json
 RUN npm install
