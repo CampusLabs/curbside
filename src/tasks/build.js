@@ -58,7 +58,7 @@
       const variables = {REF: ref, REPO: repo, SHA: sha};
       for (let key in vaultArgs || {}) {
         const {path, key: vaultKey} = vaultArgs[key];
-        variables[key] = await vault.get(path)[vaultKey];
+        variables[key] = (await vault.get(path))[vaultKey];
       }
       return _.mapObject(buildArgs || {}, str =>
         _.reduce(
