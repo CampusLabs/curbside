@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+ln -s `pwd`/docker-data /var/lib/docker
 service docker start
 
 node /code/src/tasks/build

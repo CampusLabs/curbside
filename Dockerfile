@@ -13,10 +13,7 @@ RUN apt-get update && \
       $(lsb_release -cs) \
       stable" && \
     apt-get update && \
-    apt-get install -y docker-ce && \
-    sed -i \
-      "s|DOCKER_OPTS=|DOCKER_OPTS='--data-root /scratch/docker'|" \
-      /etc/init.d/docker
+    apt-get install -y docker-ce
 
 COPY package.json /code/package.json
 RUN npm install
