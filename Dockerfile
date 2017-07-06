@@ -14,8 +14,9 @@ RUN apt-get update && \
       stable" && \
     apt-get update && \
     apt-get install -y docker-ce && \
-    mkdir docker-data && \
-    ln -s /code/docker-data /var/lib/docker
+    sed -i \
+      "s|DOCKER_OPTS=|DOCKER_OPTS='--data-root /scratch/docker'|" \
+      /etc/init.d/docker
 
 COPY package.json /code/package.json
 RUN npm install
