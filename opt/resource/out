@@ -7,8 +7,10 @@ exec 1>&2
 
 service docker start
 
+set +e
 node /code/src/tasks/out $1
 STATUS=$?
+set -e
 
 service docker stop
 

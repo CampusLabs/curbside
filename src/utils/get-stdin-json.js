@@ -1,7 +1,9 @@
 module.exports = () =>
-  new Promise(resolve => {
-    let json = '';
-    process.stdin.on('data', data => {
-      try { resolve(JSON.parse(json += data.toString())); } catch (er) {}
-    });
+  new Promise((resolve, reject) => {
+    let stdin = '';
+    process.stdin
+      .on('data', data => {
+        try { resolve(JSON.parse(stdin += data.toString())); } catch (er) {}
+      })
+      .on('end', () => reject(JSON.parse(stdin)));
   });
