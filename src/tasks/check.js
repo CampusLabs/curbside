@@ -5,6 +5,7 @@
     const _ = require('underscore');
     const config = require('../config');
     const fetch = require('node-fetch');
+    const fs = require('fs');
 
     const {
       concourse: {pipeline, resource, team},
@@ -21,9 +22,10 @@
     const builds = await res.json();
     if (builds.error) throw new Error(builds.error);
 
-    console.log(JSON.stringify(_.map(builds, ({repo, sha, tags}) => ({
-      build: [].concat(repo, sha, tags).join(' ')
-    }))));
+    fs.writeSync(3, Buffer.from(JSON.stringify(_.map(
+      builds,
+      ({repo, sha, tags}) => ({build: [].concat(repo, sha, tags).join(' ')})
+    ))));
   } catch (er) {
     console.error(er);
     process.exit(1);

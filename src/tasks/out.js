@@ -1,6 +1,6 @@
 (async () => {
   try {
-    await require('../initializers/set-config-from-file')();
+    await require('../initializers/set-config-from-stdin')();
 
     const _ = require('underscore');
     const {promisify} = require('util');
@@ -130,7 +130,7 @@
       await handleStream(stream);
     };
 
-    const {docker: {registryConfig}, resource: {version: {build}}} =
+    const {docker: {registryConfig}, resource: {version, version: {build}}} =
       require('../config');
     const [repo, sha, ...tags] = build.split(' ');
     const kv = _.invoke(tags, 'split', '=');
@@ -152,6 +152,8 @@
 
     console.log('Pushing...');
     for (let tag of image.tags) await pushImage(tag);
+
+    fs.writeSync(3, Buffer.from(JSON.stringify({version})));
   } catch (er) {
     console.error(er.toString());
     process.exit(1);
