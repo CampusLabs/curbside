@@ -8,7 +8,7 @@ exec 1>&2
 service docker start >/dev/null 2>&1
 
 set +e
-exec node /code/src/in $1
+node /code/src/in $1
 STATUS=$?
 set -e
 
