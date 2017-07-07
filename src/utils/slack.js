@@ -19,7 +19,8 @@ module.exports = async (type, message) => {
     headers: {'Content-Type': 'application/json'},
     method: 'POST'
   });
-  if (res.status >= 400) throw new Error(await res.text());
+  const text = await res.text();
+  if (res.status >= 400) throw new Error(text);
 
-  return res.json();
+  return text;
 };
