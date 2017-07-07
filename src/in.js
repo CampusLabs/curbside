@@ -110,11 +110,7 @@
         docker.modem.followProgress(
           stream,
           er => er ? reject(er) : resolve(),
-          ({id, progress, status, stream}) =>
-            process.stdout.write(
-              id ? _.compact([id, status, progress]).join(' ') + '\n' :
-              stream || ''
-            )
+          ({stream}) => process.stdout.write(stream || '')
         )
       );
 
@@ -128,6 +124,7 @@
     };
 
     const pullImage = async tag => {
+      console.log(`Pulling ${tag}...`);
       const stream = await call(docker, 'pull', tag, {
         authconfig: getAuthConfig(tag)
       });
@@ -136,6 +133,7 @@
 
     const buildImage = async image => {
       const {buildArgs, cacheFrom, context, dockerfile, tags} = image;
+      console.log(`Building ${tags[0]}...`);
       const tarball = tar
         .pack(path.resolve(`${destination}/source`, context))
         .pipe(zlib.createGzip());
@@ -154,6 +152,7 @@
     };
 
     const pushImage = async tag => {
+      console.log(`Pushing ${tag}...`);
       const stream = await call(docker.getImage(tag), 'push', {
         authconfig: getAuthConfig(tag)
       });
@@ -165,23 +164,20 @@
     );
     if (!_.isArray(configs)) configs = [configs];
 
-    console.log('Pulling...');
     const image = await getImage(_.extend({}, configs[i], {ref, repo, sha}));
     if (!image) {
       return console.log('No `image.repo` specified in `curbside.json`');
     }
 
-    console.log('Building...');
     await buildImage(image);
 
-    console.log('Pushing...');
     for (let tag of image.tags) await pushImage(tag);
 
     await slack('success', image.tags[0]);
     fs.writeSync(3, JSON.stringify({version}));
   } catch (er) {
     console.error(er);
-    const slack = require('slack');
+    const slack = require('./utils/slack');
     await slack('error', er.message);
     process.exit(1);
   }
