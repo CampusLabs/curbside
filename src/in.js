@@ -11,7 +11,7 @@
     const getGithub = require('./utils/get-github');
     const getGithubAccessToken = require('./utils/get-github-access-token');
     const path = require('path');
-    const slack = require('slack');
+    const slack = require('./utils/slack');
     const tar = require('tar-fs');
     const vault = require('./utils/vault');
     const zlib = require('zlib');
