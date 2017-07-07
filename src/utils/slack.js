@@ -15,11 +15,11 @@ module.exports = async (type, message) => {
   if (!url) return;
 
   const res = await fetch(url, {
-    body: {text: `<${BUILD_URL}|${ICONS[type]}> ${message}`},
+    body: JSON.stringify({text: `<${BUILD_URL}|${ICONS[type]}> ${message}`}),
     headers: {'Content-Type': 'application/json'},
     method: 'POST'
   });
-  if (res.status >= 400) throw await new Error(res.text());
+  if (res.status >= 400) throw new Error(await res.text());
 
   return res.json();
 };
