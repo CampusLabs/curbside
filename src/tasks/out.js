@@ -13,7 +13,8 @@
     const zlib = require('zlib');
 
     const docker = new Docker();
-    const {docker: {registryConfig}} = require('../config');
+    const {docker: {registryConfig}, resource: {destination}} =
+      require('../config');
 
     const call = (obj, key, ...args) => promisify(obj[key].bind(obj))(...args);
 
@@ -108,7 +109,7 @@
     const buildImage = async image => {
       const {buildArgs, cacheFrom, context, dockerfile, tags} = image;
       const tarball = tar
-        .pack(path.resolve('./curbside/source', context))
+        .pack(path.resolve(`${curbsideDir}/source`, context))
         .pipe(zlib.createGzip());
       const stream = await call(docker, 'buildImage', tarball, {
         buildargs: buildArgs,
@@ -131,13 +132,14 @@
       await handleStream(stream);
     };
 
-    const version = JSON.parse(fs.readFileSync('./curbside/version'));
+    const curbsideDir = `${destination}/curbside`;
+    const version = JSON.parse(fs.readFileSync(`${curbsideDir}/version`));
     const [repo, sha, ...tags] = version.build.split(' ');
     const kv = _.invoke(tags, 'split', '=');
     const ref = (_.find(kv, {0: 'ref'}) || ['ref', sha])[1];
     const i = (_.find(kv, {0: 'config'}) || ['config', 0])[1];
     let configs = JSON.parse(
-      fs.readFileSync('./curbside/source/curbside.json')
+      fs.readFileSync(`${curbsideDir}/source/curbside.json`)
     );
     if (!_.isArray(configs)) configs = [configs];
     const config = configs[i];
