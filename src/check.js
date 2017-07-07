@@ -1,9 +1,9 @@
 (async () => {
   try {
-    await require('../initializers/set-config-from-stdin')();
+    await require('./initializers/set-config-from-stdin')();
 
     const _ = require('underscore');
-    const config = require('../config');
+    const config = require('./config');
     const fetch = require('node-fetch');
     const fs = require('fs');
 

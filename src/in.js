@@ -1,21 +1,49 @@
 (async () => {
   try {
-    await require('../initializers/set-config-from-stdin')();
+    await require('./initializers/set-config-from-stdin')();
 
     const _ = require('underscore');
     const {promisify} = require('util');
+    const config = require('./config');
     const Docker = require('dockerode');
-    const getGithub = require('../utils/get-github');
+    const fetch = require('node-fetch');
     const fs = require('fs');
+    const getGithub = require('./utils/get-github');
+    const getGithubAccessToken = require('./utils/get-github-access-token');
     const path = require('path');
+    const slack = require('slack');
     const tar = require('tar-fs');
-    const vault = require('../utils/vault');
+    const vault = require('./utils/vault');
     const zlib = require('zlib');
 
-    const docker = new Docker();
-    const {docker: {registryConfig}, resource: {destination}} =
-      require('../config');
+    const {docker: {registryConfig}, resource: {destination, version}} = config;
 
+    await slack('building', version.build);
+
+    const stripOne = header => {
+      header.name = header.name.split('/').slice(1).join('/');
+      return header;
+    };
+
+    const writeSource = res =>
+      new Promise((resolve, reject) =>
+        res.body
+          .pipe(zlib.createGunzip())
+          .on('error', reject)
+          .pipe(tar.extract(`${destination}/source`, {map: stripOne}))
+          .on('error', reject)
+          .on('finish', resolve)
+      );
+
+    const [repo, sha, ...tags] = version.build.split(' ');
+    const kv = _.invoke(tags, 'split', '=');
+    const ref = (_.find(kv, {0: 'ref'}) || ['ref', sha])[1];
+    const i = (_.find(kv, {0: 'config'}) || ['config', 0])[1];
+    const accessToken = await getGithubAccessToken();
+    const apiUrl = `https://api.github.com/repos/${repo}/tarball/${sha}`;
+    await writeSource(await fetch(`${apiUrl}?access_token=${accessToken}`));
+
+    const docker = new Docker();
     const call = (obj, key, ...args) => promisify(obj[key].bind(obj))(...args);
 
     const getImage = async ({image, ref, repo, sha}) => {
@@ -109,7 +137,7 @@
     const buildImage = async image => {
       const {buildArgs, cacheFrom, context, dockerfile, tags} = image;
       const tarball = tar
-        .pack(path.resolve(`${curbsideDir}/source`, context))
+        .pack(path.resolve(`${destination}/source`, context))
         .pipe(zlib.createGzip());
       const stream = await call(docker, 'buildImage', tarball, {
         buildargs: buildArgs,
@@ -132,19 +160,13 @@
       await handleStream(stream);
     };
 
-    const curbsideDir = `${destination}/curbside`;
-    const version = JSON.parse(fs.readFileSync(`${curbsideDir}/version`));
-    const [repo, sha, ...tags] = version.build.split(' ');
-    const kv = _.invoke(tags, 'split', '=');
-    const ref = (_.find(kv, {0: 'ref'}) || ['ref', sha])[1];
-    const i = (_.find(kv, {0: 'config'}) || ['config', 0])[1];
     let configs = JSON.parse(
-      fs.readFileSync(`${curbsideDir}/source/curbside.json`)
+      fs.readFileSync(`${destination}/source/curbside.json`)
     );
     if (!_.isArray(configs)) configs = [configs];
-    const config = configs[i];
 
-    const image = await getImage(_.extend({}, config, {ref, repo, sha}));
+    console.log('Pulling...');
+    const image = await getImage(_.extend({}, configs[i], {ref, repo, sha}));
     if (!image) {
       return console.log('No `image.repo` specified in `curbside.json`');
     }
@@ -155,9 +177,12 @@
     console.log('Pushing...');
     for (let tag of image.tags) await pushImage(tag);
 
+    await slack('success', image.tags[0]);
     fs.writeSync(3, JSON.stringify({version}));
   } catch (er) {
-    console.error(er.toString());
+    console.error(er);
+    const slack = require('slack');
+    await slack('error', er.message);
     process.exit(1);
   }
 })();

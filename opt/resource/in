@@ -5,4 +5,13 @@ set -e
 exec 3>&1
 exec 1>&2
 
-exec node /code/src/tasks/in $1
+service docker start >/dev/null 2>&1
+
+set +e
+exec node /code/src/in $1
+STATUS=$?
+set -e
+
+service docker stop >/dev/null 2>&1
+
+exit $STATUS
